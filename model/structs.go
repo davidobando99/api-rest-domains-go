@@ -1,7 +1,7 @@
 package model
 
 type Domain struct {
-	Name             string    `json:"name"`
+	HostName         string    `json:"host"`
 	Servers          *[]Server `json:"servers"`
 	ServersChanged   bool      `json:"servers_changed"`
 	SslGrade         string    `json:"ssl_grade"`
