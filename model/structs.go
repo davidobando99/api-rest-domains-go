@@ -24,4 +24,5 @@ type DomainApi struct {
 }
 type ServerApi struct {
 	Name string `json:"serverName"`
+	IP   string `json:"ipAddress"`
 }
