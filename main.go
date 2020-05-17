@@ -6,15 +6,9 @@ import (
 	"log"
 	"net/http"
 	"time"
-)
 
-type domain struct {
-	Host    string   `json:"host"`
-	Servers []server `json:"endpoints"`
-}
-type server struct {
-	Name string `json:"serverName"`
-}
+	"github.com/davidobando99/APIRestWithGo/model"
+)
 
 func main() {
 	url := "https://api.ssllabs.com/api/v3/analyze?host="
@@ -36,7 +30,7 @@ func main() {
 		log.Fatal(getErr)
 	}
 
-	domain1 := domain{}
+	domain1 := model.DomainApi{}
 	_ = json.NewDecoder(response.Body).Decode(&domain1)
 	fmt.Println(domain1.Servers)
 }

@@ -17,3 +17,11 @@ type Server struct {
 	Owner    string `json:"owner"`
 	Country  string `json:"country"`
 }
+
+type DomainApi struct {
+	Host    string      `json:"host"`
+	Servers []ServerApi `json:"endpoints"`
+}
+type ServerApi struct {
+	Name string `json:"serverName"`
+}
