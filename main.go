@@ -7,13 +7,15 @@ import (
 	"net/http"
 	"time"
 
-	"./model"
+	"github.com/davidobando99/APIRestWithGo/controller"
+	"github.com/davidobando99/APIRestWithGo/model"
 )
 
 func main() {
 	url := "https://api.ssllabs.com/api/v3/analyze?host="
 
 	const HOST_NAME = "truora.com"
+	controller.CreateDomainList(HOST_NAME, "B", "B")
 	url = url + "" + HOST_NAME
 	cliente := http.Client{
 		Timeout: time.Second * 2, // Maximum of 2 secs
@@ -46,5 +48,7 @@ func main() {
 		fmt.Println(owner)
 	}
 	fmt.Println(model.GenerateSSLGrade(domain1.Servers))
+	fmt.Println(time.Now())
+	fmt.Println(time.Now().Date())
 
 }
