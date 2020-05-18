@@ -7,23 +7,29 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/buaazp/fasthttprouter"
 	"github.com/davidobando99/APIRestWithGo/controller"
 	"github.com/davidobando99/APIRestWithGo/model"
-	"github.com/gorilla/mux"
+	"github.com/valyala/fasthttp"
 )
 
-var domain1 model.DomainApi
+var domain1 model.DomainJson
 
 const HOST_NAME = "truora.com"
 
 func main() {
 
 	//fmt.Println(controller.GetPreviousGrade(domain1.Servers, controller.DomainList[0].SslGrade, controller.DomainList[0].LastTime))
+	/*
+		router := mux.NewRouter()
+		router.HandleFunc("/domains", GetDomainsEndpoint).Methods("GET")
+		router.HandleFunc("/domains/{id}", GetDomainEndpoint).Methods("GET")
+	*/
 
-	router := mux.NewRouter()
-	router.HandleFunc("/domains", GetDomainsEndpoint).Methods("GET")
-	router.HandleFunc("/domains/{id}", GetDomainEndpoint).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	router := fasthttprouter.New()
+	//router.GET("/", Index)
+	router.GET("/domains/:host", GetDomainEndpoint)
+	log.Fatal(fasthttp.ListenAndServe(":8000", router.Handler))
 }
 
 func getInfoJSON(host string) {
@@ -45,11 +51,11 @@ func getInfoJSON(host string) {
 		log.Fatal(getErr)
 	}
 
-	domain1 = model.DomainApi{}
+	domain1 = model.DomainJson{}
 	_ = json.NewDecoder(response.Body).Decode(&domain1)
 	//proving generate ssl grade
 
-	domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "C"})
+	domain1.Servers = append(domain1.Servers, model.ServerJson{"hola", "12.12", "C"})
 	/*
 		domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "D"})
 		domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "c"})
@@ -67,9 +73,17 @@ func GetDomainsEndpoint(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(controller.DomainList)
 }
 
+/*
 func GetDomainEndpoint(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	getInfoJSON(params["id"])
 	controller.CreateDomainList(params["id"], model.GenerateSSLGrade(domain1.Servers), "B")
 	json.NewEncoder(w).Encode(domain1.Servers)
+}*/
+
+func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
+	host := ctx.UserValue("host").(string)
+	getInfoJSON(host)
+	controller.CreateDomainList(host, model.GenerateSSLGrade(domain1.Servers), "B")
+	json.Marshal(&domain1)
 }

@@ -25,17 +25,22 @@ type Server struct {
 	Country  string `json:"country"`
 }
 
-type DomainApi struct {
-	Host    string      `json:"host"`
-	Servers []ServerApi `json:"endpoints"`
+type DomainJson struct {
+	Host    string       `json:"host"`
+	Servers []ServerJson `json:"endpoints"`
+	Errors  []ErrorJson  `json:"errors"`
 }
-type ServerApi struct {
+type ServerJson struct {
 	Name  string `json:"serverName"`
 	IP    string `json:"ipAddress"`
 	Grade string `json:"grade"`
 }
 
-func WhoIsServer(server ServerApi) (string, string) {
+type ErrorJson struct {
+	Message string `json:"message"`
+}
+
+func WhoIsServer(server ServerJson) (string, string) {
 	ip := server.IP
 
 	who, err := whois.Whois(ip)
@@ -62,7 +67,7 @@ func WhoIsServer(server ServerApi) (string, string) {
 
 }
 
-func GenerateSSLGrade(servers []ServerApi) string {
+func GenerateSSLGrade(servers []ServerJson) string {
 	var minorGrade string
 	availableGrades := []string{"A", "B", "C", "D", "E", "F"}
 	if len(servers) == 1 {
