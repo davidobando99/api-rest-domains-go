@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/buaazp/fasthttprouter"
+	"github.com/davidobando99/APIRestWithGo/controller"
 	"github.com/valyala/fasthttp"
 )
 

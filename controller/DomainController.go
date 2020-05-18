@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/davidobando99/APIRestWithGo/controller"
 	"github.com/davidobando99/APIRestWithGo/model"
 	"github.com/valyala/fasthttp"
 )
@@ -83,7 +82,7 @@ func getInfoJSON(host string) model.DomainJson {
 	return domain
 }
 func GetDomainsEndpoint(ctx *fasthttp.RequestCtx) {
-	doJSONWrite(ctx, fasthttp.StatusOK, controller.DomainList)
+	doJSONWrite(ctx, fasthttp.StatusOK, DomainList)
 }
 func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
 	host := ctx.UserValue("host").(string)
@@ -100,10 +99,10 @@ func DomainFromJsonApi(host string) model.Domain {
 	domain.HostName = host
 	domain.Servers = ServersFromJsonApi(domainJson.Servers)
 	domain.SslGrade = model.GenerateSSLGrade(domainJson.Servers)
-	domain.PreviousSslGrade = GetPreviousGrade(domainJson.Servers, domain.SslGrade)
+	//domain.PreviousSslGrade = GetPreviousGrade(domainJson.Servers, domain.SslGrade)
 	domain.IsDown = isDown
-	controller.CreateDomainList(host, domain.SslGrade, domain.PreviousSslGrade)
-
+	CreateDomainList(host, domain.SslGrade, domain.PreviousSslGrade)
+	return domain
 }
 
 func ServersFromJsonApi(serversJson []model.ServerJson) []model.Server {
