@@ -49,6 +49,6 @@ func main() {
 	}
 	fmt.Println(model.GenerateSSLGrade(domain1.Servers))
 	fmt.Println(time.Now())
-	fmt.Println(time.Now().Date())
+	fmt.Println(controller)
 
 }
