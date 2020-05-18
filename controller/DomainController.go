@@ -29,7 +29,7 @@ func GetPreviousGrade(servers []model.ServerApi, gradeSSL string, lastTime time.
 	var newSSL string
 	now := time.Now()
 	last := lastTime.Add(1 * time.Hour)
-	if last.Before(now) {
+	if last.After(now) {
 		newSSL = model.GenerateSSLGrade(servers)
 		return currentSSL, newSSL
 	} else {
