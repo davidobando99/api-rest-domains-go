@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/badoux/goscraper"
 	"github.com/davidobando99/APIRestWithGo/model"
 	"github.com/valyala/fasthttp"
 )
@@ -93,15 +94,56 @@ func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
 
 func DomainFromJsonApi(host string) model.Domain {
 	var domain model.Domain
-
+	var sslGrade, previousGrade, title, logo string
+	var serversJson []model.ServerJson
 	domainJson := getInfoJSON(host)
 	isDown := len(domainJson.Errors) != 0
+	founded := SearchDomainList(host)
+
+	//SI ESTA CAIDO EL SERVER SU LISTA DE ENPOINTS SERA VACIO, SINO SERA LAS OBTENIDAS POR EL JSON
+	if isDown {
+		serversJson = []model.ServerJson{}
+	} else {
+		serversJson = domainJson.Servers
+		logo, title = GetLogoAndTitle("http://www." + host)
+	}
+
+	if founded.Host == "" {
+		sslGrade = model.GenerateSSLGrade(serversJson)
+		previousGrade = sslGrade
+		CreateDomainList(host, sslGrade, previousGrade)
+	} else {
+		currentGrade := founded.SslGrade
+		lastTime := founded.LastTime
+		if isDown {
+			sslGrade = currentGrade
+			previousGrade = founded.PreviousSSL
+		} else {
+			previousGrade, sslGrade = GetPreviousGrade(serversJson, currentGrade, lastTime)
+		}
+		modifyDomainList(host, sslGrade, previousGrade, lastTime)
+
+	}
+	domain = CreateDomain(serversJson, host, sslGrade, previousGrade, title, logo, isDown)
+
+	return domain
+}
+
+func CreateDomain(serversJson []model.ServerJson, host string, sslGrade string, previousGrade string, title string, logo string, isDown bool) model.Domain {
+	var domain model.Domain
+	var servers []model.Server
+
+	if !isDown {
+		servers = ServersFromJsonApi(serversJson)
+	}
 	domain.HostName = host
-	domain.Servers = ServersFromJsonApi(domainJson.Servers)
-	domain.SslGrade = model.GenerateSSLGrade(domainJson.Servers)
-	//domain.PreviousSslGrade = GetPreviousGrade(domainJson.Servers, domain.SslGrade)
+	domain.Servers = servers
+	domain.SslGrade = sslGrade
+	domain.PreviousSslGrade = previousGrade
+	domain.Title = title
+	domain.Logo = logo
 	domain.IsDown = isDown
-	CreateDomainList(host, domain.SslGrade, domain.PreviousSslGrade)
+	domain.ServersChanged = sslGrade != previousGrade //True si el ssl grade es distinto al que tenia el server una hora o mas antes
 	return domain
 }
 
@@ -129,4 +171,37 @@ func doJSONWrite(ctx *fasthttp.RequestCtx, code int, obj interface{}) {
 	if err := json.NewEncoder(ctx).Encode(obj); err != nil {
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 	}
+}
+
+func SearchDomainList(host string) DomainDB {
+	var domainDb DomainDB
+	for _, domain := range DomainList {
+		if domain.Host == host {
+			domainDb = domain
+		}
+	}
+	return domainDb
+
+}
+
+func modifyDomainList(host string, sslGrade string, previousGrade string, lastTime time.Time) {
+
+	for _, domain := range DomainList {
+		if domain.Host == host {
+			domain.SslGrade = sslGrade
+			domain.PreviousSSL = previousGrade
+			domain.LastTime = lastTime
+
+		}
+	}
+
+}
+
+func GetLogoAndTitle(url string) (string, string) {
+	s, err := goscraper.Scrape(url, 5)
+	if err != nil {
+		fmt.Println(err)
+		return "", ""
+	}
+	return s.Preview.Icon, s.Preview.Title
 }
