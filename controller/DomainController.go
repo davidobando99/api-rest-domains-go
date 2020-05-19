@@ -85,11 +85,12 @@ func getInfoJSON(host string) model.DomainJson {
 }
 func GetDomainsEndpoint(ctx *fasthttp.RequestCtx) {
 	GetConsultedDomains()
+	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
 	doJSONWrite(ctx, fasthttp.StatusOK, Consult)
 }
 func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
 	host := ctx.UserValue("host").(string)
-
+	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
 	doJSONWrite(ctx, fasthttp.StatusOK, DomainFromJsonApi(host))
 }
 
@@ -168,6 +169,7 @@ func doJSONWrite(ctx *fasthttp.RequestCtx, code int, obj interface{}) {
 		strApplicationJSON = []byte("application/json")
 	)
 	ctx.Response.Header.SetCanonical(strContentType, strApplicationJSON)
+
 	ctx.Response.SetStatusCode(code)
 	if err := json.NewEncoder(ctx).Encode(obj); err != nil {
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
