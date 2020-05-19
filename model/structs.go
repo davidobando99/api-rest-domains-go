@@ -40,6 +40,14 @@ type ErrorJson struct {
 	Message string `json:"message"`
 }
 
+type ConsultedDomains struct {
+	Items []Item `json:"items"`
+}
+
+type Item struct {
+	HostName string `json:"host"`
+}
+
 func WhoIsServer(server ServerJson) (string, string) {
 	ip := server.IP
 

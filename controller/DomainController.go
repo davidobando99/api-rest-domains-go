@@ -20,6 +20,7 @@ type DomainDB struct {
 }
 
 var DomainList []DomainDB
+var Consult model.ConsultedDomains
 
 func CreateDomainList(hostname string, sslgrade string, previousssl string) {
 	DomainList = append(DomainList, DomainDB{hostname, sslgrade, previousssl, time.Now()})
@@ -66,28 +67,28 @@ func getInfoJSON(host string) model.DomainJson {
 	domain := model.DomainJson{}
 	_ = json.NewDecoder(response.Body).Decode(&domain)
 	//proving generate ssl grade
-
-	domain.Servers = append(domain.Servers, model.ServerJson{"hola", "12.12", "C"})
 	/*
-		domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "D"})
-		domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "c"})
-	*/
-	fmt.Println(domain.Servers)
+		domain.Servers = append(domain.Servers, model.ServerJson{"hola", "12.12", "C"})
 
-	for _, server := range domain.Servers {
-		country, owner := model.WhoIsServer(server)
-		fmt.Println(country)
-		fmt.Println(owner)
-	}
+			domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "D"})
+			domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "c"})
+
+		fmt.Println(domain.Servers)
+
+		for _, server := range domain.Servers {
+			country, owner := model.WhoIsServer(server)
+			fmt.Println(country)
+			fmt.Println(owner)
+		}*/
 
 	return domain
 }
 func GetDomainsEndpoint(ctx *fasthttp.RequestCtx) {
-	doJSONWrite(ctx, fasthttp.StatusOK, DomainList)
+	GetConsultedDomains()
+	doJSONWrite(ctx, fasthttp.StatusOK, Consult)
 }
 func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
 	host := ctx.UserValue("host").(string)
-	fmt.Println(host)
 
 	doJSONWrite(ctx, fasthttp.StatusOK, DomainFromJsonApi(host))
 }
@@ -204,4 +205,31 @@ func GetLogoAndTitle(url string) (string, string) {
 		return "", ""
 	}
 	return s.Preview.Icon, s.Preview.Title
+}
+
+func GetConsultedDomains() {
+
+	for _, domain := range DomainList {
+		if !VerifyExistedDomain(Consult.Items, domain.Host) {
+			item := model.Item{
+				domain.Host,
+			}
+			Consult.Items = append(Consult.Items, item)
+			fmt.Println(Consult.Items)
+		}
+	}
+
+}
+
+func VerifyExistedDomain(domains []model.Item, host string) bool {
+
+	for _, domain := range domains {
+		if domain.HostName == host {
+			return true
+			break
+		}
+	}
+
+	return false
+
 }
