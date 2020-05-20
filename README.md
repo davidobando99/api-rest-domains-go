@@ -25,6 +25,7 @@ CREATE DATABASE domains;
 ```
 GRANT ALL ON DATABASE domains TO maxroach;
 ```
+You can see your database in localhost:8080
 
 ### 2. Run backend in Go
 ```
@@ -36,3 +37,4 @@ To run the view you have to install node.js and vue.js. And go to the folder vie
 ```
 npm run serve
 ```
+Now go to your browser and put localhost:8081 to see the interface
