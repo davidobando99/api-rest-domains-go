@@ -15,7 +15,7 @@ type DomainDB struct {
 
 func Connection() *sql.DB {
 
-	db, err := sql.Open("postgres", "postgresql://maxroach@localhost:26257/bank?sslmode=disable")
+	db, err := sql.Open("postgres", "postgresql://maxroach@localhost:26257/domains?sslmode=disable")
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)
 	}

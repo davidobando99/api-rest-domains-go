@@ -1,11 +1,15 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/davidobando99/APIRestWithGo/database"
 
 	"github.com/badoux/goscraper"
 	"github.com/davidobando99/APIRestWithGo/model"
@@ -21,13 +25,10 @@ type DomainDB struct {
 
 var DomainList []DomainDB
 var Consult model.ConsultedDomains
+var DataBase *sql.DB
 
 func CreateDomainList(hostname string, sslgrade string, previousssl string) {
 	DomainList = append(DomainList, DomainDB{hostname, sslgrade, previousssl, time.Now()})
-}
-
-func CreateDomainDB(hostname string, sslgrade string, previousssl string) {
-
 }
 
 //sum 1 to the time hour saved on the list or DB and compare with the current time
@@ -89,19 +90,21 @@ func GetDomainsEndpoint(ctx *fasthttp.RequestCtx) {
 	doJSONWrite(ctx, fasthttp.StatusOK, Consult)
 }
 func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
+	db := database.Connection()
 	host := ctx.UserValue("host").(string)
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
-	doJSONWrite(ctx, fasthttp.StatusOK, DomainFromJsonApi(host))
+	doJSONWrite(ctx, fasthttp.StatusOK, DomainFromJsonApi(db, host))
 }
 
-func DomainFromJsonApi(host string) model.Domain {
+func DomainFromJsonApi(db *sql.DB, host string) model.Domain {
 	var domain model.Domain
 	var sslGrade, previousGrade, title, logo string
 	var serversJson []model.ServerJson
 	domainJson := getInfoJSON(host)
 	isDown := len(domainJson.Errors) != 0
-	founded := SearchDomainList(host)
-
+	founded := database.SearchDomain(db, host)
+	fmt.Println("founded")
+	fmt.Println(founded)
 	//SI ESTA CAIDO EL SERVER SU LISTA DE ENPOINTS SERA VACIO, SINO SERA LAS OBTENIDAS POR EL JSON
 	if isDown {
 		serversJson = []model.ServerJson{}
@@ -110,10 +113,10 @@ func DomainFromJsonApi(host string) model.Domain {
 		logo, title = GetLogoAndTitle("http://www." + host)
 	}
 
-	if founded.Host == "" {
+	if strings.Compare(founded.Host, "") == 0 {
 		sslGrade = model.GenerateSSLGrade(serversJson)
 		previousGrade = sslGrade
-		CreateDomainList(host, sslGrade, previousGrade)
+		database.InsertDomain(db, host, sslGrade, previousGrade)
 	} else {
 		currentGrade := founded.SslGrade
 		lastTime := founded.LastTime
@@ -123,7 +126,7 @@ func DomainFromJsonApi(host string) model.Domain {
 		} else {
 			previousGrade, sslGrade = GetPreviousGrade(serversJson, currentGrade, lastTime)
 		}
-		modifyDomainList(host, sslGrade, previousGrade, lastTime)
+		database.UpdateDomain(db, host, sslGrade, previousGrade)
 
 	}
 	domain = CreateDomain(serversJson, host, sslGrade, previousGrade, title, logo, isDown)
