@@ -13,12 +13,12 @@ type DomainDB struct {
 	LastTime    time.Time
 }
 
-func Connection() (*sql.DB, error) {
+func Connection() *sql.DB {
 
 	db, err := sql.Open("postgres", "postgresql://maxroach@localhost:26257/bank?sslmode=disable")
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)
 	}
-	return db, err
+	return db
 
 }

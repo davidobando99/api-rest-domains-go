@@ -3,13 +3,12 @@ package database
 import (
 	"database/sql"
 	"log"
-	"github.com/davidobando99/APIRestWithGo/database"
-	"time"
 )
 
-connection,err := Connection()
-func CreateTable() {
+var db *sql.DB
 
+func CreateTable() {
+	db = Connection()
 	if _, err := db.Exec(
 		"CREATE TABLE IF NOT EXISTS domain (host STRING PRIMARY KEY, sslGrade STRING, previousGrade STRING, lastSearch TIMESTAMPTZ)"); err != nil {
 		log.Fatal(err)
@@ -24,4 +23,3 @@ func InsertDomain(host string, sslgrade string, previous string) {
 	}
 
 }
-
