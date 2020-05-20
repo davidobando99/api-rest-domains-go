@@ -6,13 +6,15 @@ import (
 
 	"github.com/buaazp/fasthttprouter"
 	"github.com/davidobando99/APIRestWithGo/controller"
+	"github.com/davidobando99/APIRestWithGo/database"
 	"github.com/valyala/fasthttp"
 )
 
 func main() {
 
-	//db := database.Connection()
-	//controller.DataBase = db
+	db := database.Connection()
+	controller.DataBase = db
+	database.CreateTable(controller.DataBase)
 	router := fasthttprouter.New()
 	router.GET("/domains/", controller.GetDomainsEndpoint)
 	router.GET("/domains/:host", controller.GetDomainEndpoint)
@@ -20,6 +22,7 @@ func main() {
 	log.Fatal(fasthttp.ListenAndServe(":8000", router.Handler))
 
 	/*
+		proving database
 		database.CreateTable(db)
 		database.InsertDomain(db, "hla.com", "A", "A")
 		database.InsertDomain(db, "b.com", "A", "A")

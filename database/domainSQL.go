@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 )
@@ -34,12 +33,11 @@ func UpdateDomain(db *sql.DB, host string, sslgrade string, previous string) {
 }
 func GetDomains(db *sql.DB) []DomainDB {
 	var domains []DomainDB
-	rows, err := db.Query("SELECT * FROM domain")
+	rows, err := db.Query("SELECT * FROM domain ORDER BY lastSearch DESC")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	fmt.Println("Initial domains:")
 	for rows.Next() {
 		var host, sslGrade, previousGrade string
 		var lastSearch time.Time
@@ -48,7 +46,6 @@ func GetDomains(db *sql.DB) []DomainDB {
 		}
 		domain := DomainDB{host, sslGrade, previousGrade, lastSearch}
 		domains = append(domains, domain)
-		fmt.Println(domains)
 	}
 	return domains
 }

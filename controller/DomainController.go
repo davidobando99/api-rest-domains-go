@@ -16,20 +16,13 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type DomainDB struct {
-	Host        string
-	SslGrade    string
-	PreviousSSL string
-	LastTime    time.Time
-}
-
-var DomainList []DomainDB
 var Consult model.ConsultedDomains
 var DataBase *sql.DB
 
+/*
 func CreateDomainList(hostname string, sslgrade string, previousssl string) {
 	DomainList = append(DomainList, DomainDB{hostname, sslgrade, previousssl, time.Now()})
-}
+}*/
 
 //sum 1 to the time hour saved on the list or DB and compare with the current time
 func GetPreviousGrade(servers []model.ServerJson, gradeSSL string, lastTime time.Time) (string, string) {
@@ -51,7 +44,7 @@ func getInfoJSON(host string) model.DomainJson {
 
 	url = url + "" + host
 	cliente := http.Client{
-		Timeout: time.Second * 2, // Maximum of 2 secs
+		Timeout: time.Second * 2,
 	}
 	//Create a request
 	request, err := http.NewRequest(http.MethodGet, url, nil)
@@ -67,34 +60,19 @@ func getInfoJSON(host string) model.DomainJson {
 
 	domain := model.DomainJson{}
 	_ = json.NewDecoder(response.Body).Decode(&domain)
-	//proving generate ssl grade
-	/*
-		domain.Servers = append(domain.Servers, model.ServerJson{"hola", "12.12", "C"})
-
-			domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "D"})
-			domain1.Servers = append(domain1.Servers, model.ServerApi{"hola", "12.12", "c"})
-
-		fmt.Println(domain.Servers)
-
-		for _, server := range domain.Servers {
-			country, owner := model.WhoIsServer(server)
-			fmt.Println(country)
-			fmt.Println(owner)
-		}*/
 
 	return domain
 }
 func GetDomainsEndpoint(ctx *fasthttp.RequestCtx) {
-	db := database.Connection()
-	GetDomainsFromDatabase(db)
+	GetDomainsFromDatabase(DataBase)
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
 	doJSONWrite(ctx, fasthttp.StatusOK, Consult)
+	Consult = model.ConsultedDomains{}
 }
 func GetDomainEndpoint(ctx *fasthttp.RequestCtx) {
-	db := database.Connection()
 	host := ctx.UserValue("host").(string)
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
-	doJSONWrite(ctx, fasthttp.StatusOK, DomainFromJsonApi(db, host))
+	doJSONWrite(ctx, fasthttp.StatusOK, DomainFromJsonApi(DataBase, host))
 }
 
 func DomainFromJsonApi(db *sql.DB, host string) model.Domain {
@@ -179,6 +157,7 @@ func doJSONWrite(ctx *fasthttp.RequestCtx, code int, obj interface{}) {
 	}
 }
 
+/*
 func SearchDomainList(host string) DomainDB {
 	var domainDb DomainDB
 	for _, domain := range DomainList {
@@ -201,7 +180,7 @@ func modifyDomainList(host string, sslGrade string, previousGrade string, lastTi
 		}
 	}
 
-}
+}*/
 
 func GetLogoAndTitle(url string) (string, string) {
 	s, err := goscraper.Scrape(url, 5)
@@ -215,16 +194,18 @@ func GetLogoAndTitle(url string) (string, string) {
 func GetDomainsFromDatabase(db *sql.DB) {
 	domains := database.GetDomains(db)
 	for _, domain := range domains {
-		if !VerifyExistedDomain(Consult.Items, domain.Host) {
-			item := model.Item{
-				domain.Host,
-			}
-			Consult.Items = append(Consult.Items, item)
-			fmt.Println(Consult.Items)
+		//if !VerifyExistedDomain(Consult.Items, domain.Host) {
+		item := model.Item{
+			domain.Host,
 		}
+		Consult.Items = append(Consult.Items, item)
+
+		//}
+
 	}
 }
 
+/*
 func GetConsultedDomains() {
 
 	for _, domain := range DomainList {
@@ -237,7 +218,7 @@ func GetConsultedDomains() {
 		}
 	}
 
-}
+}*/
 
 func VerifyExistedDomain(domains []model.Item, host string) bool {
 
