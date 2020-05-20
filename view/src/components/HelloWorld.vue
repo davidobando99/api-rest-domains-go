@@ -106,7 +106,7 @@ export default {
   methods: {
     getDomains: function(e) {
       e.preventDefault();
-      axios.get("http://localhost:8000/domains").then(
+      axios.get("http://localhost:8000/domains/").then(
         response => {
           console.log(response.data);
           this.domains = response.data.items;
@@ -125,7 +125,7 @@ export default {
           this.serverChange = response.data.servers_changed;
           this.sslGrade = response.data.ssl_grade;
           this.previousGrade = response.data.previous_ssl_grade;
-          this.logo = response.data.logo;
+          this.logo = response.data.Logo;
           this.title = response.data.title;
           this.isDown = response.data.is_down;
         },
