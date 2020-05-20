@@ -26,9 +26,12 @@ func main() {
 		database.GetDomains(db)
 		//fmt.Println()
 	*/
-	//database.GetDomains(db)
+	//servers := database.GetDomains(db)
+	//fmt.Println("misServers")
+	//fmt.Println(servers)
 	//database.UpdateDomain(db, "hla.com", "B", "B")
 	//database.SearchDomain("truora.com")
-	//database.SearchDomain("hola.com")
+	//domain := database.SearchDomain(db, "truor.com")
+	//fmt.Println(domain.Host)
 
 }

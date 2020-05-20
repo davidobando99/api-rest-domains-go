@@ -37,7 +37,7 @@ func GetPreviousGrade(servers []model.ServerJson, gradeSSL string, lastTime time
 	var newSSL string
 	now := time.Now()
 	last := lastTime.Add(1 * time.Hour)
-	if last.After(now) {
+	if last.Before(now) {
 		newSSL = model.GenerateSSLGrade(servers)
 		return currentSSL, newSSL
 	} else {
@@ -85,7 +85,8 @@ func getInfoJSON(host string) model.DomainJson {
 	return domain
 }
 func GetDomainsEndpoint(ctx *fasthttp.RequestCtx) {
-	GetConsultedDomains()
+	db := database.Connection()
+	GetDomainsFromDatabase(db)
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
 	doJSONWrite(ctx, fasthttp.StatusOK, Consult)
 }
@@ -100,11 +101,11 @@ func DomainFromJsonApi(db *sql.DB, host string) model.Domain {
 	var domain model.Domain
 	var sslGrade, previousGrade, title, logo string
 	var serversJson []model.ServerJson
+
 	domainJson := getInfoJSON(host)
+	fmt.Println(domainJson.Servers)
 	isDown := len(domainJson.Errors) != 0
 	founded := database.SearchDomain(db, host)
-	fmt.Println("founded")
-	fmt.Println(founded)
 	//SI ESTA CAIDO EL SERVER SU LISTA DE ENPOINTS SERA VACIO, SINO SERA LAS OBTENIDAS POR EL JSON
 	if isDown {
 		serversJson = []model.ServerJson{}
@@ -112,7 +113,6 @@ func DomainFromJsonApi(db *sql.DB, host string) model.Domain {
 		serversJson = domainJson.Servers
 		logo, title = GetLogoAndTitle("http://www." + host)
 	}
-
 	if strings.Compare(founded.Host, "") == 0 {
 		sslGrade = model.GenerateSSLGrade(serversJson)
 		previousGrade = sslGrade
@@ -210,6 +210,19 @@ func GetLogoAndTitle(url string) (string, string) {
 		return "", ""
 	}
 	return s.Preview.Icon, s.Preview.Title
+}
+
+func GetDomainsFromDatabase(db *sql.DB) {
+	domains := database.GetDomains(db)
+	for _, domain := range domains {
+		if !VerifyExistedDomain(Consult.Items, domain.Host) {
+			item := model.Item{
+				domain.Host,
+			}
+			Consult.Items = append(Consult.Items, item)
+			fmt.Println(Consult.Items)
+		}
+	}
 }
 
 func GetConsultedDomains() {

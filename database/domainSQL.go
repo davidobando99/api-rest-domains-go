@@ -54,22 +54,22 @@ func GetDomains(db *sql.DB) []DomainDB {
 }
 
 func SearchDomain(db *sql.DB, host string) DomainDB {
-	var domain DomainDB
+	//var domain DomainDB
 	rows, err := db.Query("SELECT * FROM domain WHERE host = $1", host)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	fmt.Println("Searched domain")
 	for rows.Next() {
 		var host, sslGrade, previousGrade string
 		var lastSearch time.Time
 		if err := rows.Scan(&host, &sslGrade, &previousGrade, &lastSearch); err != nil {
 			log.Fatal(err)
 		}
-		domain := DomainDB{host, sslGrade, previousGrade, lastSearch}
-		fmt.Println(domain)
+		return DomainDB{Host: host, SslGrade: sslGrade, PreviousSSL: previousGrade, LastTime: lastSearch}
+		//fmt.Println(domain)
+		//fmt.Println(domain.Host)
 	}
-	return domain
+	return DomainDB{}
 
 }
