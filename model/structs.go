@@ -28,6 +28,7 @@ type Server struct {
 type DomainJson struct {
 	Host    string       `json:"host"`
 	Servers []ServerJson `json:"endpoints"`
+	Status  string       `json:"status"`
 	Errors  []ErrorJson  `json:"errors"`
 }
 type ServerJson struct {
