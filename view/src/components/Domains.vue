@@ -9,9 +9,11 @@
     <h1>{{msg}}</h1>
     <div class="d-flex justify-content-center">
       <form>
-        <label for="inputDomain">Enter a domain:</label>
+        <label for="inputDomain">Type a domain:</label>
         <input
           type="text"
+          id="domainInput"
+          onfocus="this.value=''"
           v-model="searchedDomain"
           class="form-control"
           placeholder="domain.com"
@@ -33,20 +35,20 @@
       </form>
     </div>
     <br />
-    <div class="d-flex justify-content-center">
-      <div class="col">
-        <div class="col-sm-12">
-          <div class="border border-dark-rounded">
+    <hr />
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-sm-6">
+          <div class="border border-primary" id="domains">
             <p class="title-1">Consulted Domains</p>
             <ul>
               <p v-for="domain in domains" :key="domain.host">{{ domain.host }}</p>
             </ul>
           </div>
         </div>
-        <div class="col-sm-16">
+        <div class="col-sm-6">
           <div class>
-            <br />
-            <div class="border border-dark-rounded">
+            <div class="border border-primary" id="domain">
               <h5>{{searchedDomain}}</h5>
               <p class="title-1">Servers:</p>
               <p v-for="server in servers" :key="server.address">
@@ -60,20 +62,20 @@
                 <br />
               </p>
               <br />
-              <p class="title-1">Domain:
+              <p class="title-1">Domain:</p>
               <p class="text">
-              Servers Changed: {{serverChange}}
-              <br />
-              SSL Grade: {{sslGrade}}
-              <br />
-              SSL Previous Grade: {{previousGrade}}
-              <br />
-              Logo: {{logo}}
-              <br />
-              Title: {{title}}
-              <br />
-              Is down: {{isDown}}
-              <br />
+                Servers Changed: {{serverChange}}
+                <br />
+                SSL Grade: {{sslGrade}}
+                <br />
+                SSL Previous Grade: {{previousGrade}}
+                <br />
+                Logo: {{logo}}
+                <br />
+                Title: {{title}}
+                <br />
+                Is down: {{isDown}}
+                <br />
               </p>
             </div>
           </div>
@@ -86,7 +88,7 @@
 <script>
 import axios from "axios";
 export default {
-  name: "HelloWorld",
+  name: "Domains",
   props: {
     msg: String
   },
@@ -105,6 +107,11 @@ export default {
   },
   methods: {
     getDomains: function(e) {
+      this.domains = null;
+      var domains = document.getElementById("domains");
+      domains.style.visibility = "visible";
+      var domain = document.getElementById("domain");
+      domain.style.visibility = "hidden";
       e.preventDefault();
       axios.get("http://localhost:8000/domains/").then(
         response => {
@@ -117,6 +124,18 @@ export default {
       );
     },
     searchDomain: function(e) {
+      var domains = document.getElementById("domains");
+      domains.style.visibility = "hidden";
+      var domain = document.getElementById("domain");
+      domain.style.visibility = "visible";
+      document.getElementById("domainInput").value = "";
+      this.servers = null;
+      this.serverChange = null;
+      this.sslGrade = null;
+      this.previousGrade = null;
+      this.logo = null;
+      this.title = null;
+      this.isDown = null;
       e.preventDefault();
       axios.get("http://localhost:8000/domains/" + this.searchedDomain).then(
         response => {
@@ -154,11 +173,11 @@ li {
 a {
   color: #42b983;
 }
-text{
+text {
   color: black;
 }
-p.title-1{
-  color:cornflowerblue;
+p.title-1 {
+  color: cornflowerblue;
   font-family: Impact, Charcoal, sans-serif;
   font-size: 30px;
 }

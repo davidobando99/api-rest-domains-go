@@ -1,18 +1,18 @@
 <template>
   <div id="app">
-    <HelloWorld msg="Welcome to the Domains Services App"/>
+    <Domains msg="Welcome to the Domains Services App" />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Domains from "./components/Domains.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
+    Domains
   }
-}
+};
 </script>
 
 <style>
