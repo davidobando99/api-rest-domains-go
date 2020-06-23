@@ -79,11 +79,14 @@ func WhoIsServer(server ServerJson) (string, string) {
 func GenerateSSLGrade(servers []ServerJson) string {
 	var minorGrade string
 	var ssl string
+
 	availableGrades := []string{"A", "B", "C", "D", "E", "F"}
 
 	if len(servers) > 0 {
 		if servers[0].Grade != "" {
-			ssl = strings.Split(servers[0].Grade, "")[0] //if the ssl grade has +
+
+			ssl = servers[0].Grade
+
 		}
 		if len(servers) == 1 {
 			if existSSL(availableGrades, ssl) {
@@ -93,7 +96,8 @@ func GenerateSSLGrade(servers []ServerJson) string {
 			minorGrade = ssl
 			for _, server := range servers[1:] {
 				if server.Grade != "" {
-					sslServer := strings.Split(server.Grade, "")[0] //if the ssl grade has +
+					sslServer := server.Grade
+					//sslServer := strings.Split(server.Grade, "")[0] //if the ssl grade has +
 					if existSSL(availableGrades, sslServer) {
 						if sslServer > minorGrade {
 							minorGrade = sslServer
@@ -109,6 +113,7 @@ func GenerateSSLGrade(servers []ServerJson) string {
 }
 
 func existSSL(arr []string, find string) bool {
+	find = strings.Split(find, "")[0] //if the ssl grade has +
 	for _, ssl := range arr {
 		if ssl == find {
 			return true

@@ -17,13 +17,13 @@ cockroach start --insecure --listen-addr=localhost
 cockroach sql --insecure --host=localhost:26257
 ```
 ```
-CREATE USER IF NOT EXISTS maxroach;
+CREATE USER IF NOT EXISTS davidobando99;
 ```
 ```
-CREATE DATABASE domains;
+CREATE DATABASE serversdb;
 ```
 ```
-GRANT ALL ON DATABASE domains TO maxroach;
+GRANT ALL ON DATABASE serversdb TO davidobando99;
 ```
 You can see your database in localhost:8080
 
